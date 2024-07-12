@@ -64,20 +64,20 @@ class _LogInState extends State<LogIn> {
     FirebaseFirestore.instance.collection("admin").get().then((snapshot) async {
       for (var result in snapshot.docs) {
         if (result.data()['Email'] != useremailcontroller.text.trim()) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: Colors.orangeAccent,
-              content: Text(
-                "Your id is not correct",
-                style: TextStyle(fontSize: 18.0),
-              )));
+          // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //     backgroundColor: Colors.orangeAccent,
+          //     content: Text(
+          //       "Your id is not correct",
+          //       style: TextStyle(fontSize: 18.0),
+          //     )));
         } else if (result.data()['Password'] !=
             userpasswordcontroller.text.trim()) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: Colors.orangeAccent,
-              content: Text(
-                "Your password is not correct",
-                style: TextStyle(fontSize: 18.0),
-              )));
+          // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //     backgroundColor: Colors.orangeAccent,
+          //     content: Text(
+          //       "Your password is not correct",
+          //       style: TextStyle(fontSize: 18.0),
+          //     )));
         } else {
           await SharedPreferenceHelper()
               .saveUserDetails(jsonEncode(result.data()));
@@ -92,6 +92,7 @@ class _LogInState extends State<LogIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         child: Stack(
           children: [

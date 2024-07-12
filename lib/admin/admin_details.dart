@@ -2,37 +2,41 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:home_food/service/database.dart';
-import 'package:home_food/service/shared_pref.dart';
 import 'package:home_food/widget/widget_support.dart';
 import 'package:home_food/service/location.dart';
 
-class OrderDetails extends StatefulWidget {
+class AdminOrderDetails extends StatefulWidget {
   Map<String, dynamic> foodItemDetails;
-  OrderDetails({
+  AdminOrderDetails({
     super.key,
     required this.foodItemDetails,
   });
 
   @override
-  State<OrderDetails> createState() => _DetailsState();
+  State<AdminOrderDetails> createState() => _AdminOrderDetailsState();
 }
 
-class _DetailsState extends State<OrderDetails> {
-  int a = 1, total = 0;
-  String? userId;
-  var adminDetails;
-
-  getthesharedpref() async {
-    Map<String, dynamic> userDetails =
-        jsonDecode((await SharedPreferenceHelper().getUserDetails())!);
-    userId = userDetails["Id"];
-    setState(() {});
-  }
+class _AdminOrderDetailsState extends State<AdminOrderDetails> {
+  var userDetails;
+  String? nextOrderCollection;
+  String? nextOrderButton;
+  bool? showButton;
 
   ontheload() async {
-    await getthesharedpref();
-    adminDetails = await DatabaseMethods()
-        .getUserDetails('admin',widget.foodItemDetails["AdminId"]);
+    userDetails = await DatabaseMethods()
+        .getUserDetails('users', widget.foodItemDetails["UserId"]);
+    nextOrderCollection =
+        widget.foodItemDetails["CurrentOrderStatus"] == "newOrders"
+            ? "acceptedOrders"
+            : "completedOrders";
+    nextOrderButton =
+        widget.foodItemDetails["CurrentOrderStatus"] == "newOrders"
+            ? "Accept Order"
+            : "Close Order";
+    showButton =
+        widget.foodItemDetails["CurrentOrderStatus"] != "completedOrders"
+            ? true
+            : false;
     setState(() {});
   }
 
@@ -40,7 +44,6 @@ class _DetailsState extends State<OrderDetails> {
   void initState() {
     super.initState();
     ontheload();
-    total = int.parse(widget.foodItemDetails["Price"]);
   }
 
   @override
@@ -51,23 +54,51 @@ class _DetailsState extends State<OrderDetails> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(
-                  Icons.arrow_back_ios_new_outlined,
-                  color: Colors.black,
-                )),
-            const SizedBox(
-              height: 15.0,
-            ),
-            Text(
-              "Status: " + widget.foodItemDetails["Status"],
-              style: AppWidget.BoldTextFieldStyle(),
-            ),
-            const SizedBox(
-              height: 15.0,
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_outlined,
+                        color: Colors.black,
+                      )),
+                  if (showButton == true)
+                    GestureDetector(
+                      onTap: () async {
+                        await DatabaseMethods().changeOrderStatus(
+                            widget.foodItemDetails["UserId"],
+                            widget.foodItemDetails["AdminId"],
+                            widget.foodItemDetails["Id"],
+                            widget.foodItemDetails["CurrentOrderStatus"],
+                            nextOrderCollection!);
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width / 2,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              nextOrderButton!,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.0,
+                                  fontFamily: 'Poppins'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             Image.network(
               widget.foodItemDetails["Image"],
@@ -129,11 +160,26 @@ class _DetailsState extends State<OrderDetails> {
                 )
               ],
             ),
+            Row(
+              children: [
+                Text(
+                  "Total Price",
+                  style: AppWidget.SemiBoldTextFieldStyle(),
+                ),
+                const SizedBox(
+                  width: 25.0,
+                ),
+                Text(
+                  "\$" + widget.foodItemDetails["Total"],
+                  style: AppWidget.SemiBoldTextFieldStyle(),
+                )
+              ],
+            ),
             const SizedBox(
               height: 30.0,
             ),
             Text(
-              "Cook Details ",
+              "User Details ",
               style: AppWidget.BoldTextFieldStyle(),
             ),
             const SizedBox(
@@ -143,28 +189,23 @@ class _DetailsState extends State<OrderDetails> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Cook Name:  " + adminDetails["Name"],
+                  "User Name:  " + userDetails["Name"],
                   style: AppWidget.SemiBoldTextFieldStyle(),
                 ),
                 Text(
-                  "Cook Contact:  " + adminDetails["Phone"],
-                  style: AppWidget.SemiBoldTextFieldStyle(),
-                ),
-                Text(
-                  "Cook UPI ID:  " + adminDetails['UPIId'],
+                  "User Contact:  " + userDetails["Phone"],
                   style: AppWidget.SemiBoldTextFieldStyle(),
                 ),
                 Row(
                   children: [
                     Text(
-                      "Cook Location ",
+                      "User Location ",
                       style: AppWidget.SemiBoldTextFieldStyle(),
                     ),
                     GestureDetector(
                       onTap: () async {
                         await LocationMethods().openMap(
-                            adminDetails['Latitude'],
-                            adminDetails["Longitude"]);
+                            userDetails['Latitude'], userDetails["Longitude"]);
                       },
                       child: const Icon(
                         Icons.location_on,

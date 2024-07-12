@@ -91,13 +91,13 @@ class _OrdersState extends State<Orders> {
                                   fit: BoxFit.cover,
                                 )),
                             const SizedBox(
-                              width: 10.0,
+                              width: 20.0,
                             ),
                             Column(
                               children: [
                                 Text(
-                                  "Status: "+ds["Status"],
-                                  style: AppWidget.SemiBoldTextFieldStyle(),
+                                  ds["Status"],
+                                  style: AppWidget.BoldTextFieldStyle(),
                                 ),
                                 Text(
                                   ds["Name"],

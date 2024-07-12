@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseMethods {
@@ -27,8 +29,17 @@ class DatabaseMethods {
         .snapshots();
   }
 
-  Future getAdminDetails(String userId) async {
-    return FirebaseFirestore.instance.collection('admin').doc(userId).get();
+  Future<Stream<QuerySnapshot>> getOrders(
+      String userId, String orderType) async {
+    return FirebaseFirestore.instance
+        .collection('admin')
+        .doc(userId)
+        .collection(orderType)
+        .snapshots();
+  }
+
+  Future getUserDetails(String userType, String userId) async {
+    return FirebaseFirestore.instance.collection(userType).doc(userId).get();
   }
 
   Future addFoodToCart(
@@ -94,14 +105,61 @@ class DatabaseMethods {
         .get();
     for (var result in cartItems.docs) {
       Map<String, dynamic> data = result.data();
-      data["Status"] = status;
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection("orders")
-          .doc(result.data()["Id"])
-          .set(data);
+      data['UserId'] = userId;
+      await addItemToNewCollection('admin', data["AdminId"], 'newOrders', data);
+      Map<String, dynamic> foodData = result.data();
+      foodData["Status"] = status;
+      await addItemToNewCollection('users', userId, 'orders', foodData);
       await deleteCartItem(userId, result.data()["Id"]);
     }
+  }
+
+  Future addItemToNewCollection(String userType, String userId,
+      String newCollection, Map<String, dynamic> data) {
+    return FirebaseFirestore.instance
+        .collection(userType)
+        .doc(userId)
+        .collection(newCollection)
+        .doc(data["Id"])
+        .set(data);
+  }
+
+  Future adminOrderStatusChange(String adminId, String orderId,
+      String prevCollection, String newCollection) async {
+    print(prevCollection);
+    print(orderId);
+    print(adminId);
+    var order = await FirebaseFirestore.instance
+        .collection('admin')
+        .doc(adminId)
+        .collection(prevCollection)
+        .doc(orderId)
+        .get();
+    await FirebaseFirestore.instance
+        .collection('admin')
+        .doc(adminId)
+        .collection(prevCollection)
+        .doc(orderId)
+        .delete();
+    return FirebaseFirestore.instance
+        .collection('admin')
+        .doc(adminId)
+        .collection(newCollection)
+        .doc(orderId)
+        .set(order.data()!);
+  }
+
+  Future changeOrderStatus(String userId, String adminId, String orderId,
+      String prevCollection, String newCollection) async {
+    await adminOrderStatusChange(
+        adminId, orderId, prevCollection, newCollection);
+    String status =
+        newCollection == "acceptedOrders" ? "Accepted" : "Completed";
+    return await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection("orders")
+        .doc(orderId)
+        .update({"Status": status});
   }
 }

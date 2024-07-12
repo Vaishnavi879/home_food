@@ -45,11 +45,12 @@ class _OnboardState extends State<Onboard> {
                   return Padding(
                     padding: const EdgeInsets.only(top: 40.0, left: 20.0, right: 20.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Image.asset(
                           contents[i].image,
                           height: 450,
-                          width: MediaQuery.of(context).size.width ,
+                          width: MediaQuery.of(context).size.width,
                           fit: BoxFit.fill,
                         ),
                         const SizedBox(

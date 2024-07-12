@@ -191,17 +191,6 @@ class _HomeState extends State<Home> {
                     "Hello " + userDetails?['Name'] + ",",
                     style: AppWidget.BoldTextFieldStyle(),
                   ),
-                  Container(
-                    margin: const EdgeInsets.only(right: 20.0),
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(
-                      Icons.shopping_cart_checkout_outlined,
-                      color: Colors.white,
-                    ),
-                  )
                 ],
               ),
               const SizedBox(

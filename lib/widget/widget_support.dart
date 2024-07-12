@@ -11,6 +11,16 @@ class AppWidget {
     );
   }
 
+  static TextStyle UnderlineTextFieldStyle() {
+    return const TextStyle(
+      color: Colors.black,
+      fontSize: 20.0,
+      fontWeight: FontWeight.bold,
+      fontFamily: 'Poppins',
+      decoration: TextDecoration.underline,
+    );
+  }
+
   static TextStyle HeadlineTextFieldStyle() {
     return const TextStyle(
       color: Colors.black,
@@ -37,5 +47,6 @@ class AppWidget {
       fontFamily: 'Poppins',
     );
   }
+
 
 }
